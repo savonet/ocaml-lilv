@@ -1,0 +1,8 @@
+*~
+*.a
+*.annot
+*.cmi
+*.cmx
+*.cmxa
+*.o
+._d
