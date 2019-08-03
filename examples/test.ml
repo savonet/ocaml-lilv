@@ -2,6 +2,7 @@ open Lilv
 
 let () =
   let w = World.create () in
+  World.load_all w;
   let pp = World.plugins w in
   Printf.printf "size: %d\n\n%!" (Plugins.length pp);
   Plugins.iter (fun p -> Printf.printf "%s: %s by %s: %d ports\n%!" (Plugin.uri p) (Plugin.name p) (Plugin.author_name p) (Plugin.num_ports p)) pp;
@@ -20,4 +21,6 @@ let () =
     if Port.is_connection_optional p then Printf.printf "optional connect ion\n%!";
     let d, a, b = Port.range_float p in Printf.printf "range: from %f to %f (default: %f)\n%!" a b d;
   done;
+  let i = Plugin.instantiate p 44100. in
+  Plugin.Instance.activate i;
   Gc.full_major ()

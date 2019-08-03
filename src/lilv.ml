@@ -1,28 +1,22 @@
 open Ctypes
 open Foreign
 
-type world = unit ptr
-let world : world typ = ptr void
-
-type plugin = unit ptr
-let plugin : plugin typ = ptr void
-
-type instance = unit ptr
-let instance : instance typ = ptr void
-
-type plugins = unit ptr
-let plugins : plugins typ = ptr void
-
-type port = unit ptr
-let port : port typ = ptr void
-
-type node = unit ptr
-let node : node typ = ptr void
-
-type iterator = unit ptr
-let iterator : iterator typ = ptr void
-
 module LV2 = struct
+  type handle = unit ptr
+  let handle : handle typ = ptr void
+
+  type descriptor
+  let descriptor : descriptor structure typ = structure "LV2_Descriptor"
+  let descriptor_uri = field descriptor "URI" string
+  let descriptor_instantiate = field descriptor "instantiate" (funptr (ptr descriptor @-> double @-> string @-> ptr void @-> returning handle))
+  let descriptor_connect_port = field descriptor "instantiate" (funptr (handle @-> uint32_t @-> ptr void @-> returning void))
+  let descriptor_activate = field descriptor "activate" (funptr (handle @-> returning void))
+  let descriptor_run = field descriptor "run" (funptr (handle @-> uint32_t @-> returning void))
+  let descriptor_deactivate = field descriptor "deactivate" (funptr (handle @-> returning void))
+  let descriptor_cleanup = field descriptor "cleanup" (funptr (handle @-> returning void))
+  let descriptor_extension_data = field descriptor "extension_data" (funptr (string @-> returning (ptr void)))
+  let () = seal descriptor
+
   module Core = struct
     let uri = "http://lv2plug.in/ns/lv2core"
 
@@ -39,6 +33,34 @@ module LV2 = struct
     let connection_optional = prefix "connectionOptional"
   end
 end
+
+type world = unit ptr
+let world : world typ = ptr void
+
+type plugin = unit ptr
+let plugin : plugin typ = ptr void
+
+type instance_impl
+let instance_impl : instance_impl structure typ = structure "LilvInstanceImpl"
+let instance_impl_descriptor = field instance_impl "lv2_descriptor" (ptr LV2.descriptor)
+let instance_impl_handle = field instance_impl "lv2_handle" LV2.handle
+let instance_impl_pimpl = field instance_impl "pimpl" (ptr void)
+let () = seal instance_impl
+
+type instance = instance_impl structure ptr
+let instance : instance typ = ptr instance_impl
+
+type plugins = unit ptr
+let plugins : plugins typ = ptr void
+
+type port = unit ptr
+let port : port typ = ptr void
+
+type node = unit ptr
+let node : node typ = ptr void
+
+type iterator = unit ptr
+let iterator : iterator typ = ptr void
 
 module Node = struct
   type t = node
@@ -137,20 +159,25 @@ module Plugin = struct
 
     let finalised i = Gc.finalise free i; i
 
-    let connect_port = foreign "lilv_instance_connect_port" (instance @-> uint32_t @-> ptr void @-> returning void)
-    let connect_port i n data = connect_port i (Unsigned.UInt32.of_int n)
+    let descriptor (i : t) = getf (!@i) instance_impl_descriptor
+    let handle (i : t) = getf (!@i) instance_impl_handle
 
-    let activate = foreign "lilv_instance_activate" (instance @-> returning void)
+    let connect_port (i : t) n = getf (!@(descriptor i)) LV2.descriptor_connect_port (handle i) (Unsigned.UInt32.of_int n)
 
-    let deactivate = foreign "lilv_instance_deactivate" (instance @-> returning void)
+    let connect_port_float i n (data : (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t) =
+      let data = array_of_bigarray array1 data in
+      connect_port i n (to_voidp (CArray.start data))
 
-    let run = foreign "lilv_instance_run" (instance @-> uint32_t @-> returning void)
-    let run i n = run i (Unsigned.UInt32.of_int n)
+    let activate i = getf (!@(descriptor i)) LV2.descriptor_activate (handle i)
+
+    let deactivate i = getf (!@(descriptor i)) LV2.descriptor_deactivate (handle i)
+
+    let run i n = getf (!@(descriptor i)) LV2.descriptor_run (handle i) (Unsigned.UInt32.of_int n)
   end
 
   let instantiate = foreign "lilv_plugin_instantiate" (plugin @-> double @-> ptr void @-> returning instance)
   (* TODO: features *)
-  let instantiate p samplerate = Instance.finalised (instantiate p samplerate (from_voidp void null))
+  let instantiate p samplerate = Instance.finalised (instantiate (get_plugin p) samplerate (from_voidp void null))
 end
 
 module Plugins = struct
@@ -203,17 +230,14 @@ module World = struct
 
   let free = foreign "lilv_world_free" (t @-> returning void)
 
-  let finalise w = Gc.finalise free w
+  let create = foreign "lilv_world_new" (void @-> returning t)
+  let create () =
+    let w = create () in
+    Gc.finalise free w;
+    w
 
   let load_all = foreign "lilv_world_load_all" (t @-> returning void)
   let load_all_fun = load_all
-
-  let create = foreign "lilv_world_new" (void @-> returning t)
-  let create ?(load_all=true) () =
-    let w = create () in
-    finalise w;
-    if load_all then load_all_fun w;
-    w
 
   let plugins = foreign "lilv_world_get_all_plugins"  (t @-> returning plugins)
   let plugins w = Plugins.make w (plugins w)
