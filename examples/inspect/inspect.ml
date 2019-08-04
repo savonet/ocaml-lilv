@@ -4,7 +4,8 @@ let show_plugin p =
   Printf.printf "%s\n%!" (Plugin.uri p);
   Printf.printf "%s%!" (Plugin.name p);
   if Plugin.author_name p <> "" then Printf.printf " by %s\n%!" (Plugin.author_name p);
-  Printf.printf "%d ports\n%!" (Plugin.num_ports p);
+  Printf.printf "Class: %s\n%!" (Plugin.Class.label (Plugin.get_class p));
+  Printf.printf "Ports: %d\n%!" (Plugin.num_ports p);
   for i = 0 to Plugin.num_ports p - 1 do
     let p = Plugin.port_by_index p i in
     Printf.printf ". port %d, %s (%s):%!" i (Port.symbol p) (Port.name p);

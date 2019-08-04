@@ -56,6 +56,9 @@ let plugins : plugins typ = ptr void
 type port = unit ptr
 let port : port typ = ptr void
 
+type plugin_class = unit ptr
+let plugin_class : plugin_class typ = ptr void
+
 type node = unit ptr
 let node : node typ = ptr void
 let node_opt : node option typ = ptr_opt void
@@ -170,6 +173,16 @@ module Plugin = struct
     match author_name (get_plugin p) with
     | Some node -> Node.to_string (Node.finalised node)
     | None -> ""
+
+  module Class = struct
+    type t = plugin_class
+
+    let label = foreign "lilv_plugin_class_get_label" (plugin_class @-> returning node)
+    let label c = Node.to_string (label c)
+  end
+
+  let get_class = foreign "lilv_plugin_get_class" (plugin @-> returning plugin_class)
+  let get_class p = get_class (get_plugin p)
 
   let num_ports = foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
   let num_ports p = Int32.to_int (num_ports (get_plugin p))
