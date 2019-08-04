@@ -5,4 +5,6 @@
 *.cmx
 *.cmxa
 *.o
-._d
+_build
+.merlin
+lilv.install

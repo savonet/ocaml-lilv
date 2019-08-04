@@ -1,0 +1,6 @@
+(library
+ (name lilv)
+ (public_name lilv)
+ (libraries ctypes ctypes.foreign)
+ (c_library_flags "-llilv-0")
+)

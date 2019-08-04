@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Dummy configure for liquidsoap-full build workflow!"
+
+exit 0
