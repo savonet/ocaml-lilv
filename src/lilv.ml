@@ -135,6 +135,21 @@ module Port = struct
   let range_float p =
     let def, min, max = range p in
     Node.to_float def, Node.to_float min, Node.to_float max
+
+  let default_float p =
+    let def, _, _ = range p in
+    let def = Node.to_float def in
+    if compare def nan = 0 then None else Some def
+
+  let min_float p =
+    let _, min, _ = range p in
+    let min = Node.to_float min in
+    if compare min nan = 0 then None else Some min
+
+  let max_float p =
+    let _, _, max = range p in
+    let max = Node.to_float max in
+    if compare max nan = 0 then None else Some max
 end
 
 module Plugin = struct
