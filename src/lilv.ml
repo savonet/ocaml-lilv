@@ -58,6 +58,7 @@ let port : port typ = ptr void
 
 type node = unit ptr
 let node : node typ = ptr void
+let node_opt : node option typ = ptr_opt void
 
 type iterator = unit ptr
 let iterator : iterator typ = ptr void
@@ -81,6 +82,9 @@ module Node = struct
   let to_uri = foreign "lilv_node_as_uri" (node @-> returning string)
 
   let to_float = foreign "lilv_node_as_float" (node @-> returning float)
+
+  let string = foreign "lilv_new_string" (world @-> string @-> returning node)
+  let string w s = finalised (string w s)
 end
 
 module Port = struct
@@ -107,6 +111,9 @@ module Port = struct
   let has_property n p = has_property (get_plugin p) (get_port p) n
 
   let is_connection_optional p = has_property (Node.uri (get_world p) LV2.Core.connection_optional) p
+
+  let index = foreign "lilv_port_get_index" (plugin @-> port @-> returning uint32_t)
+  let index p = Unsigned.UInt32.to_int (index (get_plugin p) (get_port p))
 
   let symbol = foreign "lilv_port_get_symbol" (plugin @-> port @-> returning node)
   let symbol p = Node.to_string (symbol (get_plugin p) (get_port p))
@@ -143,14 +150,20 @@ module Plugin = struct
   let name = foreign "lilv_plugin_get_name" (plugin @-> returning node)
   let name p = Node.to_string (Node.finalised (name (get_plugin p)))
 
-  let author_name = foreign "lilv_plugin_get_author_name" (plugin @-> returning node)
-  let author_name p = Node.to_string (Node.finalised (author_name (get_plugin p)))
+  let author_name = foreign "lilv_plugin_get_author_name" (plugin @-> returning node_opt)
+  let author_name p =
+    match author_name (get_plugin p) with
+    | Some node -> Node.to_string (Node.finalised node)
+    | None -> ""
 
   let num_ports = foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
   let num_ports p = Int32.to_int (num_ports (get_plugin p))
 
   let port_by_index = foreign "lilv_plugin_get_port_by_index" (plugin @-> int32_t @-> returning port)
   let port_by_index p i = Port.make p (port_by_index (get_plugin p) (Int32.of_int i))
+
+  let port_by_symbol = foreign "lilv_plugin_get_port_by_symbol" (plugin @-> node @-> returning port)
+  let port_by_symbol p s = Port.make p (port_by_symbol (get_plugin p) (Node.string (get_world p) s))
 
   module Instance = struct
     type t = instance
@@ -167,6 +180,10 @@ module Plugin = struct
     let connect_port_float i n (data : (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t) =
       let data = array_of_bigarray array1 data in
       connect_port i n (to_voidp (CArray.start data))
+
+    let connect_port_float_array i n data =
+      let data = Bigarray.Array1.of_array Bigarray.Float32 Bigarray.c_layout data in
+      connect_port_float i n data
 
     let activate i = getf (!@(descriptor i)) LV2.descriptor_activate (handle i)
 
