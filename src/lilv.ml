@@ -181,9 +181,12 @@ module Plugin = struct
       let data = array_of_bigarray array1 data in
       connect_port i n (to_voidp (CArray.start data))
 
-    let connect_port_float_array i n data =
-      let data = Bigarray.Array1.of_array Bigarray.Float32 Bigarray.c_layout data in
-      connect_port_float i n data
+    let connect_port_float_array inst n datarr off len =
+      let data = Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout len in
+      for i = 0 to len - 1 do
+        Bigarray.Array1.set data i datarr.(off + i)
+      done;
+      connect_port_float inst n data
 
     let activate i = getf (!@(descriptor i)) LV2.descriptor_activate (handle i)
 
