@@ -14,8 +14,10 @@ depends: [
   "ocaml"
   "dune"
   "ctypes"
+  "ctypes-foreign"
 ]
 depexts: [
   ["liblilv-dev"] {os-family = "debian"}
+  ["lilv"] {os = "macos" & os-distribution = "homebrew"}
 ]
 build: ["dune" "build" "-p" name "-j" jobs]
