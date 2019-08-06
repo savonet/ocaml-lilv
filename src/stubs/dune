@@ -1,0 +1,13 @@
+(env
+  (dev
+     (flags (:standard -warn-error -A))))
+
+(library
+ (name lilv_stubs)
+ (public_name lilv.stubs)
+ (libraries lilv.types ctypes.stubs sys-socket))
+
+(rule
+ (targets lilv_generated_types.ml)
+ (deps    (:gen ../generator/gen_types_c))
+ (action  (system "%{gen} > %{targets}")))

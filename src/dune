@@ -1,6 +1,16 @@
 (library
  (name lilv)
  (public_name lilv)
- (libraries ctypes ctypes.foreign)
- (c_library_flags "-llilv-0")
+ (c_names lilv_generated_stubs) 
+ (libraries ctypes.stubs lilv.stubs)
 )
+
+(rule
+ (targets lilv_generated_stubs.ml)
+ (deps    (:gen ./generator/gen_stubs.exe))
+ (action  (run %{gen} ml %{targets})))
+
+(rule
+ (targets lilv_generated_stubs.c)
+ (deps    (:gen ./generator/gen_stubs.exe))
+ (action  (run %{gen} c %{targets})))

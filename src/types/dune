@@ -1,0 +1,4 @@
+(library
+ (name lilv_types)
+ (public_name lilv.types)
+ (libraries ctypes.stubs))
