@@ -174,6 +174,18 @@ module Plugin = struct
     | Some node -> Node.to_string (Node.finalised node)
     | None -> ""
 
+  let author_email = foreign "lilv_plugin_get_author_email" (plugin @-> returning node_opt)
+  let author_email p =
+    match author_email (get_plugin p) with
+    | Some node -> Node.to_string (Node.finalised node)
+    | None -> ""
+
+  let author_homepage = foreign "lilv_plugin_get_author_homepage" (plugin @-> returning node_opt)
+  let author_homepage p =
+    match author_homepage (get_plugin p) with
+    | Some node -> Node.to_string (Node.finalised node)
+    | None -> ""
+
   module Class = struct
     type t = plugin_class
 
@@ -208,15 +220,6 @@ module Plugin = struct
     let connect_port_float i n (data : (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t) =
       let data = array_of_bigarray array1 data in
       connect_port i n (to_voidp (CArray.start data))
-
-    (*
-    let connect_port_float_array inst n datarr off len =
-      let data = Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout len in
-      for i = 0 to len - 1 do
-        Bigarray.Array1.set data i datarr.(off + i)
-      done;
-      connect_port_float inst n data
-    *)
 
     let activate i = getf (!@(descriptor i)) LV2.descriptor_activate (handle i)
 
