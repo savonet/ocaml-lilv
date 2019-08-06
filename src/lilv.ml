@@ -15,7 +15,12 @@ module LV2 = struct
   let descriptor_deactivate = field descriptor "deactivate" (funptr (handle @-> returning void))
   let descriptor_cleanup = field descriptor "cleanup" (funptr (handle @-> returning void))
   let descriptor_extension_data = field descriptor "extension_data" (funptr (string @-> returning (ptr void)))
-  let () = seal descriptor
+  let () =
+    ignore descriptor_uri;
+    ignore descriptor_instantiate;
+    ignore descriptor_cleanup;
+    ignore descriptor_extension_data;
+    seal descriptor
 
   module Core = struct
     let uri = "http://lv2plug.in/ns/lv2core"
@@ -45,7 +50,9 @@ let instance_impl : instance_impl structure typ = structure "LilvInstanceImpl"
 let instance_impl_descriptor = field instance_impl "lv2_descriptor" (ptr LV2.descriptor)
 let instance_impl_handle = field instance_impl "lv2_handle" LV2.handle
 let instance_impl_pimpl = field instance_impl "pimpl" (ptr void)
-let () = seal instance_impl
+let () =
+  ignore instance_impl_pimpl;
+  seal instance_impl
 
 type instance = instance_impl structure ptr
 let instance : instance typ = ptr instance_impl
@@ -270,7 +277,6 @@ module Plugins = struct
     let ans = ref [] in
     iter (fun p -> ans := p :: !ans) p;
     List.rev !ans
-
 end
 
 module State = struct
