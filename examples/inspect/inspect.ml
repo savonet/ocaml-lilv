@@ -4,9 +4,11 @@ let show_plugin p =
   Printf.printf "%s\n%!" (Plugin.uri p);
   Printf.printf "%s%!" (Plugin.name p);
   if Plugin.author_name p <> "" then Printf.printf " by %s\n%!" (Plugin.author_name p);
-  Printf.printf "Class: %s\n%!" (Plugin.Class.label (Plugin.get_class p));
+  Printf.printf "Class: %s\n%!" (Plugin.Class.label (Plugin.plugin_class p));
   Printf.printf "Latency: %s\n%!" (if Plugin.has_latency p then "yes" else "no");
   Printf.printf "Replaced: %s\n%!" (if Plugin.is_replaced p then "yes" else "no");
+  Printf.printf "Features: %s\n%!" (String.concat ", " (List.map Node.to_uri (Plugin.supported_features p)));
+  Printf.printf "Required features: %s\n%!" (String.concat ", " (List.map Node.to_uri (Plugin.required_features p)));
   Printf.printf "Ports: %d\n%!" (Plugin.num_ports p);
   for i = 0 to Plugin.num_ports p - 1 do
     let p = Plugin.port_by_index p i in

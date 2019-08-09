@@ -70,6 +70,9 @@ type node = unit ptr
 let node : node typ = ptr void
 let node_opt : node option typ = ptr_opt void
 
+type nodes = unit ptr
+let nodes : nodes typ = ptr void
+
 type iterator = unit ptr
 let iterator : iterator typ = ptr void
 
@@ -79,6 +82,8 @@ module Node = struct
   let null : t = from_voidp void null
 
   let free = foreign "lilv_node_free" (node @-> returning void)
+
+  let equals = foreign "lilv_node_equals" (node @-> node @-> returning bool)
 
   let finalise n = Gc.finalise free n
 
@@ -90,6 +95,7 @@ module Node = struct
   let uri w s = finalised (uri w s)
 
   let is_blank = foreign "lilv_node_is_blank" (node @-> returning bool)
+  let to_blank = foreign "lilv_node_as_blank" (node @-> returning string)
 
   let is_string = foreign "lilv_node_is_string" (node @-> returning bool)
   let to_string = foreign "lilv_node_as_string" (node @-> returning string)
@@ -109,6 +115,38 @@ module Node = struct
   let is_bool = foreign "lilv_node_is_bool" (node @-> returning bool)
   let bool = foreign "lilv_new_bool" (world @-> bool @-> returning node)
   let bool w s = finalised (bool w s)
+end
+
+module Nodes = struct
+  type t = nodes
+  type nodes_iterator = t * iterator
+
+  let length = foreign "lilv_nodes_size" (nodes @-> returning int)
+  let length p = length p
+
+  let iterate = foreign "lilv_nodes_begin" (nodes @-> returning iterator)
+  let iterate p : nodes_iterator = p, iterate p
+
+  let get = foreign "lilv_nodes_get" (nodes @-> iterator @-> returning plugin)
+  let get ((p,i):nodes_iterator) = get p i
+
+  let next = foreign "lilv_nodes_next" (nodes @-> iterator @-> returning iterator)
+  let next ((p,i):nodes_iterator) = p, next p i
+
+  let is_end = foreign "lilv_nodes_is_end" (nodes @-> iterator @-> returning bool)
+  let is_end ((p,i):nodes_iterator) = is_end p i
+
+  let iter f p =
+    let i = ref (iterate p) in
+    while not (is_end !i) do
+      f (get !i);
+      i := next !i
+    done
+
+  let to_list p : Node.t list =
+    let ans = ref [] in
+    iter (fun p -> ans := p :: !ans) p;
+    List.rev !ans
 end
 
 module Port = struct
@@ -216,6 +254,15 @@ module Plugin = struct
 
   let plugin_class = foreign "lilv_plugin_get_class" (plugin @-> returning plugin_class)
   let plugin_class p = plugin_class (get_plugin p)
+
+  let supported_features = foreign "lilv_plugin_get_supported_features" (plugin @-> returning nodes)
+  let supported_features p = Nodes.to_list (supported_features (get_plugin p))
+
+  let required_features = foreign "lilv_plugin_get_required_features" (plugin @-> returning nodes)
+  let required_features p = Nodes.to_list (required_features (get_plugin p))
+
+  let optional_features = foreign "lilv_plugin_get_optional_features" (plugin @-> returning nodes)
+  let optional_features p = Nodes.to_list (optional_features (get_plugin p))
 
   let num_ports = foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
   let num_ports p = Int32.to_int (num_ports (get_plugin p))

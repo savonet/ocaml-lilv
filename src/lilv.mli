@@ -26,6 +26,8 @@ module Node : sig
   (** A node. *)
   type t
 
+  val equals : t -> t -> bool
+
   (** NULL node. *)
   val null : t
 
@@ -38,6 +40,8 @@ module Node : sig
   val to_uri : t -> string
 
   val is_blank : t -> bool
+
+  val to_blank : t -> string
 
   (** Node as string. *)
   val string : world -> string -> t
@@ -63,6 +67,20 @@ module Node : sig
   val bool : world -> bool -> t
 
   val is_bool : t -> bool
+end
+
+module Nodes : sig
+  (** A collection of nodes. *)
+  type t
+
+  (** Length of the collection. *)
+  val length : t -> int
+
+  (** Iterate a function on a collection. *)
+  val iter : (Node.t -> unit) -> t -> unit
+
+  (** Convert collection to list. *)
+  val to_list : t -> Node.t list
 end
 
 (** Ports. *)
@@ -149,6 +167,12 @@ module Plugin : sig
   val plugin_class : t -> Class.t
 
   val is_replaced : t -> bool
+
+  val supported_features : t -> Node.t list
+
+  val required_features : t -> Node.t list
+
+  val optional_features : t -> Node.t list
 
   (** Number of ports of a plugin. *)
   val num_ports : t -> int
