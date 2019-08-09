@@ -29,20 +29,40 @@ module Node : sig
   (** NULL node. *)
   val null : t
 
-  (** Node as string. *)
-  val to_string : t -> string
-
   (** Create an URI node. *)
   val uri : world -> string -> t
+
+  val is_uri : t -> bool
 
   (** Node as URI. *)
   val to_uri : t -> string
 
-  (** Node as float. *)
-  val to_float : t -> float
+  val is_blank : t -> bool
 
   (** Node as string. *)
   val string : world -> string -> t
+
+  val is_string : t -> bool
+
+  (** Node as string. *)
+  val to_string : t -> string
+
+  val int : world -> int -> t
+
+  val is_int : t -> bool
+
+  val to_int : t -> int
+
+  val float : world -> float -> t
+
+  val is_float : t -> bool
+
+  (** Node as float. *)
+  val to_float : t -> float
+
+  val bool : world -> bool -> t
+
+  val is_bool : t -> bool
 end
 
 (** Ports. *)
@@ -127,6 +147,10 @@ module Plugin : sig
 
   (** Class of a plugin. *)
   val get_class : t -> Class.t
+
+  val has_latency : t -> bool
+
+  val is_replaced : t -> bool
 
   (** Number of ports of a plugin. *)
   val num_ports : t -> int

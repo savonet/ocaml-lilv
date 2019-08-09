@@ -84,17 +84,31 @@ module Node = struct
 
   let finalised n = finalise n; n
 
-  let to_string = foreign "lilv_node_as_string" (node @-> returning string)
-
+  let is_uri = foreign "lilv_node_is_uri" (node @-> returning bool)
+  let to_uri = foreign "lilv_node_as_uri" (node @-> returning string)
   let uri = foreign "lilv_new_uri" (world @-> string @-> returning node)
   let uri w s = finalised (uri w s)
 
-  let to_uri = foreign "lilv_node_as_uri" (node @-> returning string)
+  let is_blank = foreign "lilv_node_is_blank" (node @-> returning bool)
 
-  let to_float = foreign "lilv_node_as_float" (node @-> returning float)
-
+  let is_string = foreign "lilv_node_is_string" (node @-> returning bool)
+  let to_string = foreign "lilv_node_as_string" (node @-> returning string)
   let string = foreign "lilv_new_string" (world @-> string @-> returning node)
   let string w s = finalised (string w s)
+
+  let is_int = foreign "lilv_node_is_int" (node @-> returning bool)
+  let to_int = foreign "lilv_node_as_int" (node @-> returning int)
+  let int = foreign "lilv_new_int" (world @-> int @-> returning node)
+  let int w s = finalised (int w s)
+
+  let is_float = foreign "lilv_node_is_float" (node @-> returning bool)
+  let to_float = foreign "lilv_node_as_float" (node @-> returning float)
+  let float = foreign "lilv_new_float" (world @-> float @-> returning node)
+  let float w s = finalised (float w s)
+
+  let is_bool = foreign "lilv_node_is_bool" (node @-> returning bool)
+  let bool = foreign "lilv_new_bool" (world @-> bool @-> returning node)
+  let bool w s = finalised (bool w s)
 end
 
 module Port = struct
@@ -205,6 +219,12 @@ module Plugin = struct
 
   let num_ports = foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
   let num_ports p = Int32.to_int (num_ports (get_plugin p))
+
+  let has_latency = foreign "lilv_plugin_has_latency" (plugin @-> returning bool)
+  let has_latency p = has_latency (get_plugin p)
+
+  let is_replaced = foreign "lilv_plugin_is_replaced" (plugin @-> returning bool)
+  let is_replaced p = is_replaced (get_plugin p)
 
   let port_by_index = foreign "lilv_plugin_get_port_by_index" (plugin @-> int32_t @-> returning port)
   let port_by_index p i = Port.make p (port_by_index (get_plugin p) (Int32.of_int i))
