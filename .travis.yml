@@ -6,6 +6,7 @@ addons:
     packages:
     - ocaml-nox
     - ocaml-findlib
+    - dune
     - liblilv-dev
     - lv2-examples
 
