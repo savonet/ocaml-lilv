@@ -1,0 +1,12 @@
+language: c
+sudo: false
+dist: xenial
+addons:
+  apt:
+    packages:
+    - ocaml-nox
+    - ocaml-findlib
+    - liblilv-dev
+    - lv2-examples
+
+script: ./bootstrap && ./configure && make && make -C examples
