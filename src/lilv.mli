@@ -146,9 +146,7 @@ module Plugin : sig
   end
 
   (** Class of a plugin. *)
-  val get_class : t -> Class.t
-
-  val has_latency : t -> bool
+  val plugin_class : t -> Class.t
 
   val is_replaced : t -> bool
 
@@ -160,6 +158,17 @@ module Plugin : sig
 
   (** Retrieve a port by its symbol. *)
   val port_by_symbol : t -> string -> Port.t
+
+  (** Whether or not the plugin introduces (and reports) latency. *)
+  val has_latency : t -> bool
+
+  (** Index of the plugin's latency port. It is a fatal error to call this on a
+     plugin without checking if the port exists by first calling
+     [has_latency. Any plugin that introduces unwanted latency that should be
+     compensated for (by hosts with the ability/need) must provide this port,
+     which is a control rate output port that reports the latency for each cycle
+     in frames. *)
+  val latency_port_index : t -> int
 
   (** Instances of plugins. *)
   module Instance : sig

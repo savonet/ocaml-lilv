@@ -214,14 +214,11 @@ module Plugin = struct
     let label c = Node.to_string (label c)
   end
 
-  let get_class = foreign "lilv_plugin_get_class" (plugin @-> returning plugin_class)
-  let get_class p = get_class (get_plugin p)
+  let plugin_class = foreign "lilv_plugin_get_class" (plugin @-> returning plugin_class)
+  let plugin_class p = plugin_class (get_plugin p)
 
   let num_ports = foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
   let num_ports p = Int32.to_int (num_ports (get_plugin p))
-
-  let has_latency = foreign "lilv_plugin_has_latency" (plugin @-> returning bool)
-  let has_latency p = has_latency (get_plugin p)
 
   let is_replaced = foreign "lilv_plugin_is_replaced" (plugin @-> returning bool)
   let is_replaced p = is_replaced (get_plugin p)
@@ -231,6 +228,12 @@ module Plugin = struct
 
   let port_by_symbol = foreign "lilv_plugin_get_port_by_symbol" (plugin @-> node @-> returning port)
   let port_by_symbol p s = Port.make p (port_by_symbol (get_plugin p) (Node.string (get_world p) s))
+
+  let has_latency = foreign "lilv_plugin_has_latency" (plugin @-> returning bool)
+  let has_latency p = has_latency (get_plugin p)
+
+  let latency_port_index = foreign "lilv_plugin_get_latency_port_index" (plugin @-> returning int32_t)
+  let latency_port_index p = Int32.to_int (latency_port_index (get_plugin p))
 
   module Instance = struct
     type t = instance
