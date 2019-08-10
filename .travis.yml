@@ -3,7 +3,6 @@ sudo: required
 install: test -e .travis.opam.sh || wget https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-opam.sh
 script: bash -ex .travis-opam.sh
 env:
-  - PRE_INSTALL_HOOK="apt-get install lv2-examples"
-  - OCAML_VERSION=4.08
+  - OCAML_VERSION=4.08 PRE_INSTALL_HOOK="apt-get install lv2-examples"
 os:
   - linux
