@@ -18,6 +18,8 @@ depends: [
 ]
 depexts: [
   ["liblilv-dev"] {os-family = "debian"}
+  ["lv2-examples"] {os-family = "debian" & with-test}
   ["lilv"] {os = "macos" & os-distribution = "homebrew"}
 ]
 build: ["dune" "build" "-p" name "-j" jobs]
+run-test: [make "-C examples" "test"]
