@@ -21,5 +21,7 @@ depexts: [
   ["lv2-examples"] {os-family = "debian" & with-test}
   ["lilv"] {os = "macos" & os-distribution = "homebrew"}
 ]
-build: ["dune" "build" "-p" name "-j" jobs]
-run-test: [make "-C examples" "test"]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+  [make "-C examples" "test"] { with-test }
+]
