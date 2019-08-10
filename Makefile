@@ -17,5 +17,6 @@ doc:
 
 test:
 	@dune build @runtest
+	$(MAKE) -C examples $@
 
 all: build test doc
