@@ -23,5 +23,5 @@ depexts: [
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
-  [make "-C examples" "test"] { with-test }
+  [make "-C" "examples" "test"] { with-test }
 ]
