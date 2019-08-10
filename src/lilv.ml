@@ -44,6 +44,7 @@ let world : world typ = ptr void
 
 type plugin = unit ptr
 let plugin : plugin typ = ptr void
+let plugin_opt : plugin option typ = ptr_opt void
 
 type instance_impl
 let instance_impl : instance_impl structure typ = structure "LilvInstanceImpl"
@@ -327,8 +328,11 @@ module Plugins = struct
   let get = foreign "lilv_plugins_get" (plugins @-> iterator @-> returning plugin)
   let get ((p,i):plugins_iterator) = Plugin.make (get_world p) (get (get_plugins p) i)
 
-  let get_by_uri = foreign "lilv_plugins_get_by_uri" (plugins @-> node @-> returning plugin)
-  let get_by_uri p uri = Plugin.make (get_world p) (get_by_uri (get_plugins p) (Node.uri (get_world p) uri))
+  let get_by_uri = foreign "lilv_plugins_get_by_uri" (plugins @-> node @-> returning plugin_opt)
+  let get_by_uri p uri =
+    match get_by_uri (get_plugins p) (Node.uri (get_world p) uri) with
+    | Some plugin -> Plugin.make (get_world p) plugin
+    | None -> raise Not_found
 
   let next = foreign "lilv_plugins_next" (plugins @-> iterator @-> returning iterator)
   let next ((p,i):plugins_iterator) = p, next (get_plugins p) i
