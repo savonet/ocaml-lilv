@@ -1,0 +1,8 @@
+(env
+  (dev
+     (flags (:standard -warn-error -A))))
+
+(library
+ (name lilv_stubs)
+ (public_name lilv.stubs)
+ (libraries ctypes.stubs))

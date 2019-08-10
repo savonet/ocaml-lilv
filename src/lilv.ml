@@ -1,6 +1,8 @@
 open Ctypes
 open Foreign
 
+module Stubs = Lilv_stubs.Def(Lilv_generated_stubs)
+
 module LV2 = struct
   type handle = unit ptr
   let handle : handle typ = ptr void
@@ -23,7 +25,7 @@ module LV2 = struct
     seal descriptor
 
   module Core = struct
-    let uri = "http://lv2plug.in/ns/lv2core"
+    let uri = Stubs.core_uri ()
 
     let prefix s = uri ^ "#" ^ s
 

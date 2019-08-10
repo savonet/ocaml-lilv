@@ -1,0 +1,4 @@
+(executable
+ (name gen_stubs)
+ (modules gen_stubs)
+ (libraries lilv.stubs ctypes.stubs))
