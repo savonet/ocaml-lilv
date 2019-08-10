@@ -1,13 +1,8 @@
 language: c
-sudo: false
-dist: xenial
-addons:
-  apt:
-    packages:
-    - ocaml-nox
-    - ocaml-findlib
-    - dune
-    - liblilv-dev
-    - lv2-examples
-
-script: ./bootstrap && ./configure && make && make -C examples
+sudo: required
+install: test -e .travis.opam.sh || wget https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-opam.sh
+script: bash -ex .travis-opam.sh
+env:
+  - OCAML_VERSION=4.08
+os:
+  - linux
