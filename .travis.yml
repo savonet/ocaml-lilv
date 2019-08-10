@@ -1,9 +1,8 @@
 language: c
-sudo: false
-services:
-  - docker
-install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-docker.sh
-script: bash ./.travis-docker.sh
+sudo: required
+install: test -e .travis.opam.sh || wget https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-opam.sh
+script: bash -ex .travis-opam.sh
 env:
- matrix:
-   - DISTRO=ubuntu OCAML_VERSION=4.08
+  - OCAML_VERSION=4.08
+os:
+  - linux
