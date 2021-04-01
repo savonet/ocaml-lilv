@@ -1,3 +1,0 @@
-(executable
- (name amp)
- (libraries lilv))
