@@ -11,7 +11,9 @@ let () =
   let port_in = Plugin.port_by_symbol p "in" in
   let port_out = Plugin.port_by_symbol p "out" in
   let samples_length = 1024 in
-  let samples = Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout samples_length in
+  let samples =
+    Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout samples_length
+  in
   let i = Plugin.instantiate p 44100. in
   Plugin.Instance.connect_port_float i (Port.index port_gain) samples;
   Plugin.Instance.connect_port_float i (Port.index port_in) samples;

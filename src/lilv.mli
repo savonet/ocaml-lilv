@@ -1,20 +1,13 @@
 (** LV2 specification. *)
 module LV2 : sig
-
   (** Core LV2 specification. *)
   module Core : sig
     val uri : string
-
     val prefix : string -> string
-
     val input_port : string
-
     val output_port : string
-
     val audio_port : string
-
     val control_port : string
-
     val connection_optional : string
   end
 end
@@ -40,7 +33,6 @@ module Node : sig
   val to_uri : t -> string
 
   val is_blank : t -> bool
-
   val to_blank : t -> string
 
   (** Node as string. *)
@@ -52,20 +44,15 @@ module Node : sig
   val to_string : t -> string
 
   val int : world -> int -> t
-
   val is_int : t -> bool
-
   val to_int : t -> int
-
   val float : world -> float -> t
-
   val is_float : t -> bool
 
   (** Node as float. *)
   val to_float : t -> float
 
   val bool : world -> bool -> t
-
   val is_bool : t -> bool
 end
 
@@ -167,11 +154,8 @@ module Plugin : sig
   val plugin_class : t -> Class.t
 
   val is_replaced : t -> bool
-
   val supported_features : t -> Node.t list
-
   val required_features : t -> Node.t list
-
   val optional_features : t -> Node.t list
 
   (** Number of ports of a plugin. *)
@@ -200,7 +184,11 @@ module Plugin : sig
     type t
 
     (** Connect a port to float data. *)
-    val connect_port_float : t -> int -> (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t -> unit
+    val connect_port_float :
+      t ->
+      int ->
+      (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+      unit
 
     (** Activate an instance. *)
     val activate : t -> unit

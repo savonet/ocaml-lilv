@@ -1,4 +1,4 @@
-(lang dune 2.0)
+(lang dune 2.8)
 (version 0.1.0)
 (name lilv)
 (source (github savonet/ocaml-lilv))
@@ -15,7 +15,7 @@
  (depends
   conf-pkg-config
   conf-lilv
-  (dune (>= 2.0))
+  dune
   dune-configurator
   ctypes
   ctypes-foreign))

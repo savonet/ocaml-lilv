@@ -9,8 +9,8 @@
  (libraries lilv))
 
 (rule
-  (alias runtest)
-  (deps
-    (:inspect ./inspect.exe))
-  (action
-    (run %{inspect})))
+ (alias runtest)
+ (deps
+  (:inspect ./inspect.exe))
+ (action
+  (run %{inspect})))
