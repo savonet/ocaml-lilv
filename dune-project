@@ -3,7 +3,7 @@
 (name lilv)
 (source (github savonet/ocaml-lilv))
 (license LGPL-2.1)
-(authors "Romain Beauxis <toots@rastageeks.org>")
+(authors "Samuel Mimram <smimram@gmail.com>")
 (maintainers "The Savonet Team <savonet-users@lists.sourceforge.net>")
 
 (generate_opam_files true)
