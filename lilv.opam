@@ -5,7 +5,7 @@ synopsis: "Bindings to lilv library for using LV2 audio plugins"
 description:
   "Bindings to the lilv library for simple use of LV2 plugins in applications. LV2 is an open extensible standard for audio plugins. Many types of plugins can be built with LV2, including audio effects, synthesizers, and control processors for modulation and automation."
 maintainer: ["The Savonet Team <savonet-users@lists.sourceforge.net>"]
-authors: ["Romain Beauxis <toots@rastageeks.org>"]
+authors: ["Samuel Mimram <smimram@gmail.com>"]
 license: "LGPL-2.1"
 homepage: "https://github.com/savonet/ocaml-lilv"
 bug-reports: "https://github.com/savonet/ocaml-lilv/issues"
