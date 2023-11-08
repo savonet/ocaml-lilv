@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install packages
-        run: apt-get -y install lv2-examples
+        run: sudo apt-get -y install lv2-examples
       - name: Set-up OCaml
         uses: ocaml/setup-ocaml@v2
         with:
