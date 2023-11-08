@@ -1,3 +1,7 @@
+(* Force linking with the library... See
+   https://github.com/yallop/ocaml-ctypes/issues/541 *)
+external __ : unit -> int = "lilv_node_free"
+
 open Ctypes
 open Foreign
 
