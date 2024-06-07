@@ -171,11 +171,11 @@ module Plugin : sig
   val has_latency : t -> bool
 
   (** Index of the plugin's latency port. It is a fatal error to call this on a
-     plugin without checking if the port exists by first calling
-     [has_latency. Any plugin that introduces unwanted latency that should be
-     compensated for (by hosts with the ability/need) must provide this port,
-     which is a control rate output port that reports the latency for each cycle
-     in frames. *)
+      plugin without checking if the port exists by first calling
+      [has_latency]. Any plugin that introduces unwanted latency that should be
+      compensated for (by hosts with the ability/need) must provide this port,
+      which is a control rate output port that reports the latency for each
+      cycle in frames. *)
   val latency_port_index : t -> int
 
   (** Instances of plugins. *)
