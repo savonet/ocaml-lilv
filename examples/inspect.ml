@@ -29,9 +29,13 @@ let show_plugin p =
   Printf.printf "\n%!"
 
 let () =
+  let count = ref false in
+  Arg.parse [
+    "--count", Arg.Set count, " Only count plugins."
+  ] (fun _ -> ()) "inspect [options]";
   let w = World.create () in
   World.load_all w;
   let pp = World.plugins w in
   Printf.printf "We have %d plugins.\n\n%!" (Plugins.length pp);
-  Plugins.iter show_plugin pp;
+  if not !count then Plugins.iter show_plugin pp;
   Gc.full_major ()
