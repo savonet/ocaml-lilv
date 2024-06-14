@@ -149,17 +149,29 @@ module Plugin = struct
     let finalised i = Gc.finalise free i; i
 
     let connect_port (i : t) n =
-      getf !@(descriptor i) LV2.descriptor_connect_port (handle i) (Unsigned.UInt32.of_int n)
+      (* getf !@(descriptor i) LV2.descriptor_connect_port (handle i) (Unsigned.UInt32.of_int n) *)
+      let f = getf !@(descriptor i) LV2.descriptor_connect_port in
+      let f = Ctypes.coerce LV2.descriptor_connect_port_ptr_type (Foreign.funptr LV2.descriptor_connect_port_type) f in
+      f (handle i) (Unsigned.UInt32.of_int n)
 
     let connect_port_float i n (data : (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t) =
       let data = array_of_bigarray array1 data in
       connect_port i n (to_voidp (CArray.start data))
 
-    let activate i = getf !@(descriptor i) LV2.descriptor_activate (handle i)
+    let activate i =
+      let f = getf !@(descriptor i) LV2.descriptor_activate in
+      let f = Ctypes.coerce LV2.descriptor_activate_ptr_type (Foreign.funptr LV2.descriptor_activate_type) f in
+      f (handle i)
 
-    let deactivate i = getf !@(descriptor i) LV2.descriptor_deactivate (handle i)
+    let deactivate i =
+      let f = getf !@(descriptor i) LV2.descriptor_deactivate in
+      let f = Ctypes.coerce LV2.descriptor_deactivate_ptr_type (Foreign.funptr LV2.descriptor_deactivate_type) f in
+      f (handle i)
 
-    let run i n = getf !@(descriptor i) LV2.descriptor_run (handle i) (Unsigned.UInt32.of_int n)
+    let run i n =
+      let f = getf !@(descriptor i) LV2.descriptor_run in
+      let f = Ctypes.coerce LV2.descriptor_run_ptr_type (Foreign.funptr LV2.descriptor_run_type) f in
+      f (handle i) (Unsigned.UInt32.of_int n)
   end
 
   (* TODO: features *)

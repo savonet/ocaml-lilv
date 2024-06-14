@@ -3,44 +3,36 @@ open Ctypes
 (* This Types_generated module is an instantiation of the Types functor defined in the type_description.ml file. *)
 module Types = Types_generated
 
-(* (\* See https://github.com/yallop/ocaml-ctypes/blob/master/tests/test-funptrs/stubs/functions.ml *\) *)
-(* module Handle_void = (val Foreign.dynamic_funptr (int @-> returning int)) *)
-
 module Functions (F : Ctypes.FOREIGN) = struct
   open F
 
   module LV2 = struct
-    type handle = unit ptr
+    include Types.LV2
 
-    let handle : handle typ = ptr void
-
-    type descriptor
-
-    let descriptor : descriptor structure typ = structure "LV2_Descriptor"
+    (* Function pointers are tricky, see https://discuss.ocaml.org/t/ctypes-how-to-cast-a-function-pointer-and-then-call-it/9653/4 *)
+    
     let descriptor_uri = field descriptor "URI" string
     
-    (* let descriptor_instantiate = field descriptor "instantiate" (funptr (ptr descriptor @-> double @-> string @-> ptr void @-> returning handle)) *)
+    let descriptor_instantiate = field descriptor "instantiate" descriptor_instantiate_ptr_type
 
-    (* let descriptor_connect_port = field descriptor "instantiate" (funptr (handle @-> uint32_t @-> ptr void @-> returning void)) *)
+    let descriptor_connect_port = field descriptor "instantiate" descriptor_connect_port_ptr_type
 
-    (* let descriptor_activate = field descriptor "activate" (funptr (handle @-> returning void)) *)
+    let descriptor_activate = field descriptor "activate" descriptor_activate_ptr_type
 
-    (* let descriptor_run = field descriptor "run" (funptr (handle @-> uint32_t @-> returning void)) *)
+    let descriptor_run = field descriptor "run" descriptor_run_ptr_type
 
-    (* let descriptor_deactivate = field descriptor "deactivate" (funptr (handle @-> returning void)) *)
+    let descriptor_deactivate = field descriptor "deactivate" descriptor_deactivate_ptr_type
 
-    (* let descriptor_cleanup = field descriptor "cleanup" (funptr (handle @-> returning void)) *)
-
-    (* let descriptor_extension_data = field descriptor "extension_data" (funptr (string @-> returning (ptr void))) *)
-
-    (* let descriptor_cleanup = field descriptor "cleanup" Handle_void.t *)
+    let descriptor_cleanup = field descriptor "cleanup" descriptor_cleanup_ptr_type
     
-    (* let () = *)
-      (* ignore descriptor_uri; *)
-      (* ignore descriptor_instantiate; *)
-      (* ignore descriptor_cleanup; *)
-      (* ignore descriptor_extension_data; *)
-      (* seal descriptor *)
+    let descriptor_extension_data = field descriptor "extension_data" descriptor_extension_data_ptr_type
+    
+    let () =
+      ignore descriptor_uri;
+      ignore descriptor_instantiate;
+      ignore descriptor_cleanup;
+      ignore descriptor_extension_data;
+      seal descriptor
 
     module Core = struct
       let uri = "http://lv2plug.in/ns/lv2core"
