@@ -1,3 +1,5 @@
+open Ctypes
+
 include C.Functions
 
 module Node = struct
@@ -42,4 +44,123 @@ module Nodes = struct
     let ans = ref [] in
     iter (fun p -> ans := p :: !ans) p;
     List.rev !ans
+end
+
+module Port = struct
+  include Port
+
+  let is_a n p = is_a (get_plugin p) (get_port p) n
+  let is_input p = is_a (Node.uri (get_world p) LV2.Core.input_port) p
+  let is_output p = is_a (Node.uri (get_world p) LV2.Core.output_port) p
+  let is_audio p = is_a (Node.uri (get_world p) LV2.Core.audio_port) p
+  let is_control p = is_a (Node.uri (get_world p) LV2.Core.control_port) p
+  let has_property n p = has_property (get_plugin p) (get_port p) n
+  let is_connection_optional p = has_property (Node.uri (get_world p) LV2.Core.connection_optional) p
+  let index p = Unsigned.UInt32.to_int (index (get_plugin p) (get_port p))
+  let symbol p = Node.to_string (symbol (get_plugin p) (get_port p))
+  let name p = Node.to_string (Node.finalised (name (get_plugin p) (get_port p)))
+ 
+  let range p =
+    let def = allocate node Node.null in
+    let min = allocate node Node.null in
+    let max = allocate node Node.null in
+    range (get_plugin p) (get_port p) def min max;
+    let def = Node.finalised !@def in
+    let min = Node.finalised !@min in
+    let max = Node.finalised !@max in
+    (def, min, max)
+
+  let range_float p =
+    let def, min, max = range p in
+    (Node.to_float def, Node.to_float min, Node.to_float max)
+
+  let default_float p =
+    let def, _, _ = range p in
+    let def = Node.to_float def in
+    if compare def nan = 0 then None else Some def
+
+  let min_float p =
+    let _, min, _ = range p in
+    let min = Node.to_float min in
+    if compare min nan = 0 then None else Some min
+
+  let max_float p =
+    let _, _, max = range p in
+    let max = Node.to_float max in
+    if compare max nan = 0 then None else Some max
+end
+
+module Plugin = struct
+  include Plugin
+
+  let uri p = Node.to_uri (uri (get_plugin p))
+  let name p = Node.to_string (Node.finalised (name (get_plugin p)))
+
+    let author_name p =
+    match author_name (get_plugin p) with
+      | Some node -> Node.to_string (Node.finalised node)
+      | None -> ""
+
+      let author_email p =
+    match author_email (get_plugin p) with
+      | Some node -> Node.to_string (Node.finalised node)
+      | None -> ""
+
+        let author_homepage p =
+    match author_homepage (get_plugin p) with
+      | Some node -> Node.to_string (Node.finalised node)
+      | None -> ""
+
+        module Class = struct
+          include Class
+
+              let label c = Node.to_string (label c)
+            end
+
+        let plugin_class p = plugin_class (get_plugin p)
+
+        let supported_features p = Nodes.to_list (supported_features (get_plugin p))
+
+        let required_features p = Nodes.to_list (required_features (get_plugin p))
+
+          let optional_features p = Nodes.to_list (optional_features (get_plugin p))
+
+          let num_ports p = Int32.to_int (num_ports (get_plugin p))
+
+          let is_replaced p = is_replaced (get_plugin p)
+
+              let port_by_index p i =
+    Port.make p (port_by_index (get_plugin p) (Int32.of_int i))
+
+  let port_by_symbol p s =
+    Port.make p (port_by_symbol (get_plugin p) (Node.string (get_world p) s))
+
+  let has_latency p = has_latency (get_plugin p)
+  
+  let latency_port_index p = Int32.to_int (latency_port_index (get_plugin p))
+
+  module Instance = struct
+    include Instance
+
+    let finalised i = Gc.finalise free i; i
+
+    
+    let connect_port (i : t) n =
+      getf !@(descriptor i) LV2.descriptor_connect_port (handle i) (Unsigned.UInt32.of_int n)
+
+    let connect_port_float i n (data : (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t) =
+      let data = array_of_bigarray array1 data in
+      connect_port i n (to_voidp (CArray.start data))
+
+    let activate i = getf !@(descriptor i) LV2.descriptor_activate (handle i)
+
+    let deactivate i = getf !@(descriptor i) LV2.descriptor_deactivate (handle i)
+
+    let run i n = getf !@(descriptor i) LV2.descriptor_run (handle i) (Unsigned.UInt32.of_int n)
+  end
+
+  (* TODO: features *)
+  let instantiate p samplerate =
+    Instance.finalised
+      (instantiate (get_plugin p) samplerate (from_voidp void null))
 end

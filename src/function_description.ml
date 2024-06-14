@@ -135,7 +135,6 @@ module Functions (F : Ctypes.FOREIGN) = struct
     let is_end = foreign "lilv_nodes_is_end" (nodes @-> iterator @-> returning bool)
   end
 
-  (*
   module Port = struct
     type t = (world * plugin) * port
 
@@ -145,198 +144,55 @@ module Functions (F : Ctypes.FOREIGN) = struct
     let get_port (p : t) = snd p
 
     let is_a = foreign "lilv_port_is_a" (plugin @-> port @-> node @-> returning bool)
-
-    let is_a n p = is_a (get_plugin p) (get_port p) n
-    let is_input p = is_a (Node.uri (get_world p) LV2.Core.input_port) p
-    let is_output p = is_a (Node.uri (get_world p) LV2.Core.output_port) p
-    let is_audio p = is_a (Node.uri (get_world p) LV2.Core.audio_port) p
-    let is_control p = is_a (Node.uri (get_world p) LV2.Core.control_port) p
-
     let has_property = foreign "lilv_port_has_property" (plugin @-> port @-> node @-> returning bool)
-
-    let has_property n p = has_property (get_plugin p) (get_port p) n
-
-    let is_connection_optional p = has_property (Node.uri (get_world p) LV2.Core.connection_optional) p
-
     let index = foreign "lilv_port_get_index" (plugin @-> port @-> returning uint32_t)
-
-    let index p = Unsigned.UInt32.to_int (index (get_plugin p) (get_port p))
-
     let symbol = foreign "lilv_port_get_symbol" (plugin @-> port @-> returning node)
-
-    let symbol p = Node.to_string (symbol (get_plugin p) (get_port p))
     let name = foreign "lilv_port_get_name" (plugin @-> port @-> returning node)
-
-    let name p = Node.to_string (Node.finalised (name (get_plugin p) (get_port p)))
-
     let range = foreign "lilv_port_get_range" (plugin @-> port @-> ptr node @-> ptr node @-> ptr node @-> returning void)
-
-    let range p =
-      let def = allocate node Node.null in
-      let min = allocate node Node.null in
-      let max = allocate node Node.null in
-      range (get_plugin p) (get_port p) def min max;
-      let def = Node.finalised !@def in
-      let min = Node.finalised !@min in
-      let max = Node.finalised !@max in
-      (def, min, max)
-
-    let range_float p =
-      let def, min, max = range p in
-      (Node.to_float def, Node.to_float min, Node.to_float max)
-
-    let default_float p =
-      let def, _, _ = range p in
-      let def = Node.to_float def in
-      if compare def nan = 0 then None else Some def
-
-    let min_float p =
-      let _, min, _ = range p in
-      let min = Node.to_float min in
-      if compare min nan = 0 then None else Some min
-
-    let max_float p =
-      let _, _, max = range p in
-      let max = Node.to_float max in
-      if compare max nan = 0 then None else Some max
   end
 
   module Plugin = struct
     type t = world * plugin
 
-  let make w p : t = (w, p)
-  let get_world (p : t) = fst p
-  let get_plugin (p : t) = snd p
-  let uri = foreign "lilv_plugin_get_uri" (plugin @-> returning node)
-  let uri p = Node.to_uri (uri (get_plugin p))
-  let name = foreign "lilv_plugin_get_name" (plugin @-> returning node)
-  let name p = Node.to_string (Node.finalised (name (get_plugin p)))
+    let make w p : t = (w, p)
+    let get_world (p : t) = fst p
+    let get_plugin (p : t) = snd p
+    let uri = foreign "lilv_plugin_get_uri" (plugin @-> returning node)
+    let name = foreign "lilv_plugin_get_name" (plugin @-> returning node)
+    let author_name = foreign "lilv_plugin_get_author_name" (plugin @-> returning node_opt)
+    let author_email = foreign "lilv_plugin_get_author_email" (plugin @-> returning node_opt)
+    let author_homepage = foreign "lilv_plugin_get_author_homepage" (plugin @-> returning node_opt)
 
-  let author_name =
-    foreign "lilv_plugin_get_author_name" (plugin @-> returning node_opt)
+    module Class = struct
+      type t = plugin_class
 
-  let author_name p =
-    match author_name (get_plugin p) with
-      | Some node -> Node.to_string (Node.finalised node)
-      | None -> ""
+      let label = foreign "lilv_plugin_class_get_label" (plugin_class @-> returning node)
+    end
 
-  let author_email =
-    foreign "lilv_plugin_get_author_email" (plugin @-> returning node_opt)
+    let plugin_class = foreign "lilv_plugin_get_class" (plugin @-> returning plugin_class)
+    let supported_features = foreign "lilv_plugin_get_supported_features" (plugin @-> returning nodes)
+    let required_features = foreign "lilv_plugin_get_required_features" (plugin @-> returning nodes)
+    let optional_features = foreign "lilv_plugin_get_optional_features" (plugin @-> returning nodes)
+    let num_ports = foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
+    let is_replaced = foreign "lilv_plugin_is_replaced" (plugin @-> returning bool)
+    let port_by_index = foreign "lilv_plugin_get_port_by_index" (plugin @-> int32_t @-> returning port)
+    let port_by_symbol = foreign "lilv_plugin_get_port_by_symbol" (plugin @-> node @-> returning port)
+    let has_latency = foreign "lilv_plugin_has_latency" (plugin @-> returning bool)
+    let latency_port_index = foreign "lilv_plugin_get_latency_port_index" (plugin @-> returning int32_t)
 
-  let author_email p =
-    match author_email (get_plugin p) with
-      | Some node -> Node.to_string (Node.finalised node)
-      | None -> ""
+    module Instance = struct
+      type t = instance
 
-  let author_homepage =
-    foreign "lilv_plugin_get_author_homepage" (plugin @-> returning node_opt)
+      let free = foreign "lilv_instance_free" (instance @-> returning void)
 
-  let author_homepage p =
-    match author_homepage (get_plugin p) with
-      | Some node -> Node.to_string (Node.finalised node)
-      | None -> ""
+      let descriptor (i : t) = getf !@i instance_impl_descriptor
+      let handle (i : t) = getf !@i instance_impl_handle
+    end
 
-  module Class = struct
-    type t = plugin_class
-
-    let label =
-      foreign "lilv_plugin_class_get_label" (plugin_class @-> returning node)
-
-    let label c = Node.to_string (label c)
+    let instantiate = foreign "lilv_plugin_instantiate" (plugin @-> double @-> ptr void @-> returning instance)
   end
 
-  let plugin_class =
-    foreign "lilv_plugin_get_class" (plugin @-> returning plugin_class)
-
-  let plugin_class p = plugin_class (get_plugin p)
-
-  let supported_features =
-    foreign "lilv_plugin_get_supported_features" (plugin @-> returning nodes)
-
-  let supported_features p = Nodes.to_list (supported_features (get_plugin p))
-
-  let required_features =
-    foreign "lilv_plugin_get_required_features" (plugin @-> returning nodes)
-
-  let required_features p = Nodes.to_list (required_features (get_plugin p))
-
-  let optional_features =
-    foreign "lilv_plugin_get_optional_features" (plugin @-> returning nodes)
-
-  let optional_features p = Nodes.to_list (optional_features (get_plugin p))
-
-  let num_ports =
-    foreign "lilv_plugin_get_num_ports" (plugin @-> returning int32_t)
-
-  let num_ports p = Int32.to_int (num_ports (get_plugin p))
-  let is_replaced = foreign "lilv_plugin_is_replaced" (plugin @-> returning bool)
-  let is_replaced p = is_replaced (get_plugin p)
-
-  let port_by_index =
-    foreign "lilv_plugin_get_port_by_index"
-      (plugin @-> int32_t @-> returning port)
-
-  let port_by_index p i =
-    Port.make p (port_by_index (get_plugin p) (Int32.of_int i))
-
-  let port_by_symbol =
-    foreign "lilv_plugin_get_port_by_symbol" (plugin @-> node @-> returning port)
-
-  let port_by_symbol p s =
-    Port.make p (port_by_symbol (get_plugin p) (Node.string (get_world p) s))
-
-  let has_latency = foreign "lilv_plugin_has_latency" (plugin @-> returning bool)
-  let has_latency p = has_latency (get_plugin p)
-
-  let latency_port_index =
-    foreign "lilv_plugin_get_latency_port_index" (plugin @-> returning int32_t)
-
-  let latency_port_index p = Int32.to_int (latency_port_index (get_plugin p))
-
-  module Instance = struct
-    type t = instance
-
-    let free = foreign "lilv_instance_free" (instance @-> returning void)
-
-    let finalised i =
-      Gc.finalise free i;
-      i
-
-    let descriptor (i : t) = getf !@i instance_impl_descriptor
-    let handle (i : t) = getf !@i instance_impl_handle
-
-    let connect_port (i : t) n =
-      getf
-        !@(descriptor i)
-        LV2.descriptor_connect_port (handle i) (Unsigned.UInt32.of_int n)
-
-    let connect_port_float i n
-        (data :
-          (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t) =
-      let data = array_of_bigarray array1 data in
-      connect_port i n (to_voidp (CArray.start data))
-
-    let activate i = getf !@(descriptor i) LV2.descriptor_activate (handle i)
-
-    let deactivate i =
-      getf !@(descriptor i) LV2.descriptor_deactivate (handle i)
-
-    let run i n =
-      getf
-        !@(descriptor i)
-        LV2.descriptor_run (handle i) (Unsigned.UInt32.of_int n)
-  end
-
-  let instantiate =
-    foreign "lilv_plugin_instantiate"
-      (plugin @-> double @-> ptr void @-> returning instance)
-
-  (* TODO: features *)
-  let instantiate p samplerate =
-    Instance.finalised
-      (instantiate (get_plugin p) samplerate (from_voidp void null))
-end
-
+    (*
 module Plugins = struct
   type t = world * plugins
   type plugins_iterator = t * iterator
@@ -404,5 +260,5 @@ module World = struct
   let plugins = foreign "lilv_world_get_all_plugins" (t @-> returning plugins)
   let plugins w = Plugins.make w (plugins w)
 end
-*)
+     *)
 end
