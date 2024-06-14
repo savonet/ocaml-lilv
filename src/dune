@@ -4,7 +4,6 @@
  (libraries core)
  ; ctypes backward compatibility shims warn sometimes; suppress them
  (flags (:standard -w -9-27))
- (c_library_flags (:include c_library_flags.sexp))
  (ctypes
   (external_library_name lilv-0)
   (build_flags_resolver pkg_config)
@@ -20,12 +19,5 @@
   )
   (generated_types Types_generated)
   (generated_entry_point C)
- )
-)
-
-(rule
- (targets c_flags.sexp c_library_flags.sexp)
- (action
-  (run ./config/discover.exe)
  )
 )

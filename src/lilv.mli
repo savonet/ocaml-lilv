@@ -70,7 +70,6 @@ module Nodes : sig
   val to_list : t -> Node.t list
 end
 
-(*
 (** Ports. *)
 module Port : sig
   (** A port. *)
@@ -237,4 +236,3 @@ module World : sig
   (** Obtain the collection of all plugins. *)
   val plugins : world -> Plugins.t
 end
-*)

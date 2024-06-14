@@ -1,8 +1,10 @@
 open Ctypes
 
-(* This Types_generated module is an instantiation of the Types functor defined
-   in the type_description.ml file. *)
+(* This Types_generated module is an instantiation of the Types functor defined in the type_description.ml file. *)
 module Types = Types_generated
+
+(* (\* See https://github.com/yallop/ocaml-ctypes/blob/master/tests/test-funptrs/stubs/functions.ml *\) *)
+(* module Handle_void = (val Foreign.dynamic_funptr (int @-> returning int)) *)
 
 module Functions (F : Ctypes.FOREIGN) = struct
   open F
@@ -16,7 +18,7 @@ module Functions (F : Ctypes.FOREIGN) = struct
 
     let descriptor : descriptor structure typ = structure "LV2_Descriptor"
     let descriptor_uri = field descriptor "URI" string
-
+    
     (* let descriptor_instantiate = field descriptor "instantiate" (funptr (ptr descriptor @-> double @-> string @-> ptr void @-> returning handle)) *)
 
     (* let descriptor_connect_port = field descriptor "instantiate" (funptr (handle @-> uint32_t @-> ptr void @-> returning void)) *)
@@ -31,6 +33,8 @@ module Functions (F : Ctypes.FOREIGN) = struct
 
     (* let descriptor_extension_data = field descriptor "extension_data" (funptr (string @-> returning (ptr void))) *)
 
+    (* let descriptor_cleanup = field descriptor "cleanup" Handle_void.t *)
+    
     (* let () = *)
       (* ignore descriptor_uri; *)
       (* ignore descriptor_instantiate; *)
@@ -192,73 +196,30 @@ module Functions (F : Ctypes.FOREIGN) = struct
     let instantiate = foreign "lilv_plugin_instantiate" (plugin @-> double @-> ptr void @-> returning instance)
   end
 
-    (*
-module Plugins = struct
-  type t = world * plugins
-  type plugins_iterator = t * iterator
+  module Plugins = struct
+    type t = world * plugins
+    type plugins_iterator = t * iterator
 
-  let make world plugins : t = (world, plugins)
-  let get_world (p : t) = fst p
-  let get_plugins (p : t) = snd p
-  let length = foreign "lilv_plugins_size" (plugins @-> returning int)
-  let length p = length (get_plugins p)
-  let iterate = foreign "lilv_plugins_begin" (plugins @-> returning iterator)
-  let iterate p : plugins_iterator = (p, iterate (get_plugins p))
+    let make world plugins : t = (world, plugins)
+    let get_world (p : t) = fst p
+    let get_plugins (p : t) = snd p
+    let length = foreign "lilv_plugins_size" (plugins @-> returning int)
+    let iterate = foreign "lilv_plugins_begin" (plugins @-> returning iterator)
+    let get = foreign "lilv_plugins_get" (plugins @-> iterator @-> returning plugin)
+    let get_by_uri = foreign "lilv_plugins_get_by_uri" (plugins @-> node @-> returning plugin_opt)
+    let next = foreign "lilv_plugins_next" (plugins @-> iterator @-> returning iterator)
+    let is_end = foreign "lilv_plugins_is_end" (plugins @-> iterator @-> returning bool)
+  end
 
-  let get =
-    foreign "lilv_plugins_get" (plugins @-> iterator @-> returning plugin)
+  module State = struct end
 
-  let get ((p, i) : plugins_iterator) =
-    Plugin.make (get_world p) (get (get_plugins p) i)
+  module World = struct
+    type t = world
 
-  let get_by_uri =
-    foreign "lilv_plugins_get_by_uri" (plugins @-> node @-> returning plugin_opt)
-
-  let get_by_uri p uri =
-    match get_by_uri (get_plugins p) (Node.uri (get_world p) uri) with
-      | Some plugin -> Plugin.make (get_world p) plugin
-      | None -> raise Not_found
-
-  let next =
-    foreign "lilv_plugins_next" (plugins @-> iterator @-> returning iterator)
-
-  let next ((p, i) : plugins_iterator) = (p, next (get_plugins p) i)
-
-  let is_end =
-    foreign "lilv_plugins_is_end" (plugins @-> iterator @-> returning bool)
-
-  let is_end ((p, i) : plugins_iterator) = is_end (get_plugins p) i
-
-  let iter f p =
-    let i = ref (iterate p) in
-    while not (is_end !i) do
-      f (get !i);
-      i := next !i
-    done
-
-  let to_list p =
-    let ans = ref [] in
-    iter (fun p -> ans := p :: !ans) p;
-    List.rev !ans
-end
-
-module State = struct end
-
-module World = struct
-  type t = world
-
-  let t = world
-  let free = foreign "lilv_world_free" (t @-> returning void)
-  let create = foreign "lilv_world_new" (void @-> returning t)
-
-  let create () =
-    let w = create () in
-    Gc.finalise free w;
-    w
-
-  let load_all = foreign "lilv_world_load_all" (t @-> returning void)
-  let plugins = foreign "lilv_world_get_all_plugins" (t @-> returning plugins)
-  let plugins w = Plugins.make w (plugins w)
-end
-     *)
+    let t = world
+    let free = foreign "lilv_world_free" (t @-> returning void)
+    let create = foreign "lilv_world_new" (void @-> returning t)
+    let load_all = foreign "lilv_world_load_all" (t @-> returning void)
+    let plugins = foreign "lilv_world_get_all_plugins" (t @-> returning plugins)
+  end
 end

@@ -2,6 +2,10 @@ open Ctypes
 
 include C.Functions
 
+module LV2 = struct
+  include LV2
+end
+
 module Node = struct
   include Node
 
@@ -96,40 +100,40 @@ module Plugin = struct
   let uri p = Node.to_uri (uri (get_plugin p))
   let name p = Node.to_string (Node.finalised (name (get_plugin p)))
 
-    let author_name p =
+  let author_name p =
     match author_name (get_plugin p) with
-      | Some node -> Node.to_string (Node.finalised node)
-      | None -> ""
+    | Some node -> Node.to_string (Node.finalised node)
+    | None -> ""
 
-      let author_email p =
+  let author_email p =
     match author_email (get_plugin p) with
-      | Some node -> Node.to_string (Node.finalised node)
-      | None -> ""
+    | Some node -> Node.to_string (Node.finalised node)
+    | None -> ""
 
-        let author_homepage p =
+  let author_homepage p =
     match author_homepage (get_plugin p) with
-      | Some node -> Node.to_string (Node.finalised node)
-      | None -> ""
+    | Some node -> Node.to_string (Node.finalised node)
+    | None -> ""
 
-        module Class = struct
-          include Class
+  module Class = struct
+    include Class
 
-              let label c = Node.to_string (label c)
-            end
+    let label c = Node.to_string (label c)
+  end
 
-        let plugin_class p = plugin_class (get_plugin p)
+  let plugin_class p = plugin_class (get_plugin p)
 
-        let supported_features p = Nodes.to_list (supported_features (get_plugin p))
+  let supported_features p = Nodes.to_list (supported_features (get_plugin p))
 
-        let required_features p = Nodes.to_list (required_features (get_plugin p))
+  let required_features p = Nodes.to_list (required_features (get_plugin p))
 
-          let optional_features p = Nodes.to_list (optional_features (get_plugin p))
+  let optional_features p = Nodes.to_list (optional_features (get_plugin p))
 
-          let num_ports p = Int32.to_int (num_ports (get_plugin p))
+  let num_ports p = Int32.to_int (num_ports (get_plugin p))
 
-          let is_replaced p = is_replaced (get_plugin p)
+  let is_replaced p = is_replaced (get_plugin p)
 
-              let port_by_index p i =
+  let port_by_index p i =
     Port.make p (port_by_index (get_plugin p) (Int32.of_int i))
 
   let port_by_symbol p s =
@@ -144,7 +148,6 @@ module Plugin = struct
 
     let finalised i = Gc.finalise free i; i
 
-    
     let connect_port (i : t) n =
       getf !@(descriptor i) LV2.descriptor_connect_port (handle i) (Unsigned.UInt32.of_int n)
 
@@ -161,6 +164,52 @@ module Plugin = struct
 
   (* TODO: features *)
   let instantiate p samplerate =
-    Instance.finalised
-      (instantiate (get_plugin p) samplerate (from_voidp void null))
+    Instance.finalised (instantiate (get_plugin p) samplerate (from_voidp void null))
+end
+
+module Plugins = struct
+  include Plugins
+
+  let length p = length (get_plugins p)
+
+  let iterate p : plugins_iterator = (p, iterate (get_plugins p))
+                                     
+  let get ((p, i) : plugins_iterator) =
+    Plugin.make (get_world p) (get (get_plugins p) i)
+
+  let get_by_uri p uri =
+    match get_by_uri (get_plugins p) (Node.uri (get_world p) uri) with
+      | Some plugin -> Plugin.make (get_world p) plugin
+      | None -> raise Not_found
+
+  let next ((p, i) : plugins_iterator) = (p, next (get_plugins p) i)
+                                         
+  let is_end ((p, i) : plugins_iterator) = is_end (get_plugins p) i
+
+  let iter f p =
+    let i = ref (iterate p) in
+    while not (is_end !i) do
+      f (get !i);
+      i := next !i
+    done
+
+  let to_list p =
+    let ans = ref [] in
+    iter (fun p -> ans := p :: !ans) p;
+    List.rev !ans
+end
+
+module State = struct
+  include State
+end
+
+module World = struct
+  include World
+      
+  let create () =
+    let w = create () in
+    Gc.finalise free w;
+    w
+
+  let plugins w = Plugins.make w (plugins w)
 end
