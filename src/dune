@@ -1,13 +1,23 @@
 (library
  (name lilv)
  (public_name lilv)
- (libraries ctypes ctypes.foreign)
- (c_library_flags (:include c_library_flags.sexp))
-)
-
-(rule
- (targets c_flags.sexp c_library_flags.sexp)
- (action
-  (run ./config/discover.exe)
+ (libraries core ctypes-foreign)
+ ; ctypes backward compatibility shims warn sometimes; suppress them
+ (flags (:standard -w -9-27))
+ (ctypes
+  (external_library_name lilv-0)
+  (build_flags_resolver pkg_config)
+  (headers (include "lilv/lilv.h"))
+  (type_description
+   (instance Types)
+   (functor Type_description)
+  )
+  (function_description
+   (concurrency unlocked)
+   (instance Functions)
+   (functor Function_description)
+  )
+  (generated_types Types_generated)
+  (generated_entry_point C)
  )
 )

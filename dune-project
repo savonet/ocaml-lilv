@@ -1,5 +1,5 @@
-(lang dune 2.8)
-(version 0.1.0)
+(lang dune 3.15)
+(version 0.2.0)
 (name lilv)
 (source (github savonet/ocaml-lilv))
 (license LGPL-2.1)
@@ -7,6 +7,7 @@
 (maintainers "The Savonet Team <savonet-users@lists.sourceforge.net>")
 
 (generate_opam_files true)
+(using ctypes 0.3)
 
 (package
  (name lilv)
