@@ -1,3 +1,4 @@
+(*
 (** LV2 specification. *)
 module LV2 : sig
   (** Core LV2 specification. *)
@@ -236,3 +237,4 @@ module World : sig
   (** Obtain the collection of all plugins. *)
   val plugins : world -> Plugins.t
 end
+*)
