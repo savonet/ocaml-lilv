@@ -1,9 +1,4 @@
-0.2.1 (unreleased)
-=====
-
-- Remove unnecessary "core" library.
-
-0.2.0 (2024-06-14)
+0.2.0 (2024-06-15)
 =====
 
 - Generate stubs, this is now much faster!
