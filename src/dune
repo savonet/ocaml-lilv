@@ -1,7 +1,7 @@
 (library
  (name lilv)
  (public_name lilv)
- (libraries core ctypes-foreign)
+ (libraries ctypes-foreign)
  ; ctypes backward compatibility shims warn sometimes; suppress them
  (flags (:standard -w -9-27))
  (ctypes
