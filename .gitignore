@@ -1,10 +1,7 @@
 *~
-*.a
-*.annot
-*.cmi
-*.cmx
-*.cmxa
-*.o
 _build
+*.byte
+*.native
+_tests
 .merlin
-lilv.install
+*.install
