@@ -19,7 +19,7 @@ let () =
   Plugin.Instance.connect_port_float i (Port.index port_in) samples;
   Plugin.Instance.connect_port_float i (Port.index port_out) samples;
   Plugin.Instance.activate i;
-  Printf.printf "Runing.\n%!";
+  Printf.printf "Running.\n%!";
   Plugin.Instance.run i samples_length;
   Plugin.Instance.deactivate i;
   Printf.printf "Bye.\n%!";
